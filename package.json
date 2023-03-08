@@ -20,5 +20,10 @@
   "bugs": {
     "url": "https://github.com/goldfrapper/nodejs-cms/issues"
   },
-  "homepage": "https://github.com/goldfrapper/nodejs-cms#readme"
+  "homepage": "https://github.com/goldfrapper/nodejs-cms#readme",
+  "dependencies": {
+    "@popperjs/core": "^2.11.6",
+    "bootstrap": "^5.3.0-alpha1",
+    "pug": "^3.0.2"
+  }
 }
