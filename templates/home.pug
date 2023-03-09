@@ -1,13 +1,14 @@
 doctype html
 html
   head
-    title NodeJS-CMS
+    title=page.title
     include head.pug
   body
-    include topmenu.pug
+    div(class="container")
+      include topmenu.pug
     
-    block maincontent
-      div(class="rows maincontent")
-        div(class="")
+      block maincontent
+        div(class="rows maincontent")
+          div(class="")
 
-  include footer.pug
+      include footer.pug

@@ -8,7 +8,7 @@ html
       div(class="header")
         h1
           img(src="/resources/favicon.png" height="24px") 
-          b(class="text-capitalize")=title
+          b(class="text-capitalize")=page.title
           small(class="text-muted")  NodeJS-CMS
 
       nav(class="navbar navbar-expand-lg nav-pills")
@@ -23,7 +23,7 @@ html
 
 
       mixin settings-form()
-        form
+        form(method="POST" action="/admin/settings")
           div(class="mb-3")
             label(for="siteTitle" class="form-label") Site title
             input(type="text" class="form-control" id="siteTitle" aria-describedby="emailHelp")

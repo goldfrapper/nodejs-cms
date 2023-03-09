@@ -1,7 +1,8 @@
 block header
   div(class="header")
     
-    h1
+    h1(class="")
       img(src="/resources/favicon.png" height="24px") 
-      b NodeJS-CMS 
-      small(class="text-muted") With faded secondary text
+      b=page.title
+      span &nbsp;
+      small(class="text-muted padding-left:1em;")=page.subtitle
