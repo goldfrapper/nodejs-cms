@@ -7,7 +7,7 @@ html
     div(class="container")
       div(class="header")
         h1
-          img(src="/resources/favicon.png" height="24px") 
+          img(src="/resources/favicon.png" height="32px" width="32px") 
           b(class="text-capitalize")=page.title
           small(class="text-muted")  NodeJS-CMS
 
@@ -32,15 +32,29 @@ html
             div(class="mb-3")
               - h = s.key+'Help';
               label(for=s.key class="form-label")=s.name
-              input(type="text" class="form-control" value=s.value id=s.key aria-describedby=h)
-              div(id=h class="form-text")=s.desc
+              input(type="text" class="form-control" 
+                name=s.key
+                value=s.value id=s.key aria-describedby=h)
+              div(id=h class="form-text")=s.note
 
           div(class="mb-3")
             button(type="submit" class="btn btn-primary") Submit
+            
+      mixin page-form()
+        form(method="POST" action="/admin/content")
+          
+      
+      mixin content-list()
+        ul
 
       block maincontent
         
-      +settings-form()
+      if page.title == 'settings'
+        +settings-form()
+      
+      if page.title == 'content'
+        +page-list()
+        +content-form()
       
         
 
