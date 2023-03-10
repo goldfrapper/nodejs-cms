@@ -20,6 +20,17 @@
   "bugs": {
     "url": "https://github.com/goldfrapper/nodejs-cms/issues"
   },
+  "nodemonConfig": {
+    "verbose": true,
+    "ignore": [
+      "test/*",
+      ".git",
+      "data/",
+      "node_modules/*"
+    ],
+    "delay": "0",
+    "ext": "pug,json,js,css"
+  },
   "homepage": "https://github.com/goldfrapper/nodejs-cms#readme",
   "dependencies": {
     "@popperjs/core": "^2.11.6",
