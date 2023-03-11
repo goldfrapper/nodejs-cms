@@ -40,21 +40,49 @@ html
           div(class="mb-3")
             button(type="submit" class="btn btn-primary") Submit
             
-      mixin page-form()
+      mixin article-form()
         form(method="POST" action="/admin/content")
+          
+          mixin form_input(input)
+            input(type=input.type class="form-control" 
+              name=input.name
+              value=input.value id=input.id
+              aria-describedby=input.helpId)
+          mixin form_textarea(input)
+            textarea(
+              name=input.name
+              id=input.id
+              aria-describedby=input.helpId
+            )=input.value
+          
+          each input in form.list()
+            label(for=input.id class="form-label")=input.label
+            if input.type == 'textarea'
+              +form_textarea(input)
+            else
+              +form_input(input)
+            div(id=input.helpId class="form-text")=input.helpText
           
       
       mixin content-list()
         ul
+          each c in contentlist
+            li
+              - link = "/admin/content?ref=" + c.ref;
+              a(href=link)=c.title
 
       block maincontent
-        
-      if page.title == 'settings'
-        +settings-form()
       
-      if page.title == 'content'
-        +page-list()
-        +content-form()
+      div(class="row align-items-start justify-content-start")
+        if page.title == 'settings'
+          +settings-form()
+      
+        if page.title == 'content'
+          div(class="col-2")
+            +content-list()
+          div(class="col-10")
+            if content
+              +article-form()
       
         
 
