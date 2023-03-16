@@ -27,7 +27,7 @@ html
 
 
       mixin settings-form()
-        form(method=form.method action=form.action)
+        form(method="POST" action="/admin/settings")
           each s in settings
             div(class="mb-3")
               - h = s.key+'Help';
@@ -41,7 +41,7 @@ html
             button(type="submit" class="btn btn-primary") Submit
             
       mixin article-form()
-        form(method="POST" action="/admin/content")
+        form(method=form.method action=form.action)
           
           mixin form_input(input)
             input(type=input.type class="form-control" 
