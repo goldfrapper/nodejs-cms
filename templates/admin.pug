@@ -25,13 +25,89 @@ html
           span(class="navbar-text")
             a(href='/' target='_blank') Visit the website
 
+      mixin form-label( name, label )
+        - var id = name+'_Id';
+        label(for=id class="form-label col-form-label-sm")=label
+      
+      mixin form-textinput( name, value, helpText)
+        - var id = name+'_Id';
+        - var helpId = name+'_HelpId';
+        input(type="text"
+          class="form-control form-control-sm" 
+          name=name
+          value=value id=id
+          aria-describedby=helpId)
+        div(id=helpId class="form-text")=helpText
+      mixin form-floating-input( name, value, label)
+        - var id = name+'_Id';
+        div(class="form-floating mb-3")
+          input(type="text" name=name value=value class="form-control" id=id)
+          label(for="floatingInput")=label
+      mixin form-hiddeninput(name, value)
+        input(type="hidden" name=name value=value)
+      mixin form-submitbuttom( label )
+        button(type="submit" class="btn btn-primary btn-sm")=label
+      mixin form-deletebutton( label )
+        button(type="submit" name="delete" class="btn btn-danger btn-sm")=label
+      mixin form-switch(name, label)
+        - var id = name+'_Id';
+        div(class="form-check form-switch")
+          input(class="form-check-input" name=name type="checkbox" role="switch" id=id)
+          label(class="form-check-label" for=id)=label
+
+      mixin link-form(link)
+        form(method="POST" action="/admin/content?ref="+link.ref)
+          div(class="row grid gap-1 row-gap-3")
+            div(class="col-sm-4 p-1")
+              +form-textinput('title',link.title)
+            div(class="col-sm-4 p-1")
+              +form-textinput('link',link.link)
+            div(class="col-sm d-grid p-1 gap-2 d-md-flex justify-content-md-end")
+              +form-submitbuttom('Save')
+              +form-deletebutton('Delete')
+      mixin publish-form(content)
+        form(method="POST" action="/admin/content?ref="+content.ref)
+          +form-hiddeninput('status', 'published')
+          +form-switch('publish', 'Publish')
+          
+      mixin socials-form(content)
+        form(method="POST" action="/admin/content?ref="+content.ref)
+          div(class="row")
+            div(class="col-2")
+              +form-label('title','Title')
+            div(class="col-6")
+              //- +form-floating-input('title', content.title, 'Title')
+              +form-textinput('title',content.title)
+            div(class="col-2")
+              +form-switch('publish', 'Publish')
+            div(class="col-2 justify-content-md-end")
+              +form-submitbuttom('Submit')
+        hr
+        div(class="row fw-bold")
+          div(class="col")
+            +form-label('title','Title')
+          div(class="col")
+            +form-label('link','Link')
+          div(class="col")
+        for link in Array.from(content.entries())
+          +link-form(link)
+
+      mixin content-list2( list )
+        ul(class="list-group")
+        for content in list
+          li(class="list-group-item d-flex justify-content-between align-items-center")
+            a(href='/admin/content?ref='+content.ref)=content.title
+          span(class="badge bg-primary rounded-pill")=content.size
+
+      mixin content-bag(content)
+        p has #{content.size} children
 
       mixin settings-form()
         form(method="POST" action="/admin/settings")
           each s in settings
             div(class="mb-3")
               - h = s.key+'Help';
-              label(for=s.key class="form-label")=s.name
+              label(for=s.key class="floatingInput form-label")=s.name
               input(type="text" class="form-control" 
                 name=s.key
                 value=s.value id=s.key aria-describedby=h)
@@ -44,7 +120,7 @@ html
         form(method=form.method action=form.action)
           
           mixin form_input(input)
-            input(type=input.type class="form-control" 
+            input(type=input.type class="floatingInput form-control" 
               name=input.name
               value=input.value id=input.id
               aria-describedby=input.helpId)
@@ -65,7 +141,7 @@ html
           each input in form.list()
             
             if input.type == 'textarea'
-              label(for=input.id class="form-label")=input.label
+              label(for=input.id class="floatingInput form-label")=input.label
               +form_textarea(input)
             else if input.type == 'hidden'
               +form_input(input)
@@ -81,13 +157,24 @@ html
           div(class="mb-3")
             br
             button(type="submit" class="btn btn-primary") Submit
-      
-      mixin content-list()
-        ul
-          each c in contentlist
+    
+      mixin content-list( list )
+        ul(class=" gx-5")
+          each c in list
             li
+              
               - link = "/admin/content?ref=" + c.ref;
               a(href=link)=c.title
+              span &nbsp;
+              span(class="badge text-bg-light")=c.type
+                if c.isBag
+                  span &nbsp;
+                  span(class="badge text-bg-info")=c.size
+              
+              
+              //- if c.isBag
+              //-   p dsgsfgfgsfdgsfdgsfd
+              //-   +content-list( Array.from(c.entries()) )
 
       block maincontent
       
@@ -96,11 +183,21 @@ html
           +settings-form()
       
         if page.title == 'content'
-          div(class="col-2")
-            +content-list()
-          div(class="col-10")
+          div(class="col-3")
+            +content-list(contentlist)
+            //- +content-list2(contentlist)
+          div(class="col-9")
             if content
-              +article-form()
+              h2(class="border-bottom border-secondary border-2")=content.title
+              br
+              if content.type == 'socials'
+                +socials-form(content)
+              else
+                +article-form()
+              
+              hr
+              if content.isBag
+                +content-bag(content)
       
         
 

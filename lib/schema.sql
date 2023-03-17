@@ -68,6 +68,10 @@ left outer join content_xref USING(ref)
 where ref='socials' or ref in (select ref from content_xref where parentRef='socials')
 order by sorder ASC
 
+select * from content
+left outer join content_xref USING(ref)
+--where ref='socials' or ref in (select ref from content_xref where parentRef='socials')
+order by parentRef ASC, sorder ASC
 
 select content.* from content
 where 1
