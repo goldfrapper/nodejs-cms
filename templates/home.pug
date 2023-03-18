@@ -37,7 +37,6 @@ html
         div(class="rows maincontent")
           div(class="")
             h1=content.title
-            div
-              p:markdown-it=content.content
+            div !{content.content}
 
       include footer.pug

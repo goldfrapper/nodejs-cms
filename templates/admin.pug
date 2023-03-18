@@ -27,7 +27,7 @@ html
 
       mixin form-label( name, label )
         - var id = name+'_Id';
-        label(for=id class="form-label col-form-label-sm")=label
+        label(for=id class="form-label col-sm-2 col-form-label-sm")=label
       
       mixin form-textinput( name, value, helpText)
         - var id = name+'_Id';
@@ -49,13 +49,40 @@ html
         button(type="submit" class="btn btn-primary btn-sm")=label
       mixin form-deletebutton( label )
         button(type="submit" name="delete" class="btn btn-danger btn-sm")=label
+      mixin form-addbutton( label )
+        button(type="submit" class="btn btn-success btn-sm")=label
       mixin form-switch(name, label)
         - var id = name+'_Id';
         div(class="form-check form-switch")
           input(class="form-check-input" name=name type="checkbox" role="switch" id=id)
           label(class="form-check-label" for=id)=label
 
+      mixin form-textarea(name, value)
+        textarea(
+          class="form-control"
+          name=name
+          id="exampleFormControlTextarea1"
+          rows="10")=value
+      mixin form-dateinput(name, value)
+        input(
+          type="date" class="form-control form-control-sm"
+          name=name value=value)
+      mixin form-statusselect(name, value)
+        - var id = name+'_Id';
+        div(class="btn-group" role="group")
+          - var statusCodes = ['draft','onhold','published'];
+          for s in statusCodes
+            - var id = s+'_Id';
+            - var checked = (s == value);
+            input(type="radio" class="btn-check" 
+              name=name value=s id=id autocomplete="off" checked=checked)
+            label(
+              class="btn btn-outline-primary btn-sm btn-outline-secondary" 
+              for=id)=s
+
       mixin link-form(link)
+        if !link
+          - link = {ref:'',title:'',link:''}
         form(method="POST" action="/admin/content?ref="+link.ref)
           div(class="row grid gap-1 row-gap-3")
             div(class="col-sm-4 p-1")
@@ -63,8 +90,12 @@ html
             div(class="col-sm-4 p-1")
               +form-textinput('link',link.link)
             div(class="col-sm d-grid p-1 gap-2 d-md-flex justify-content-md-end")
-              +form-submitbuttom('Save')
-              +form-deletebutton('Delete')
+              if (link.ref)
+                +form-submitbuttom('Save')
+                +form-deletebutton('Delete')
+              else
+                +form-addbutton('Add')
+
       mixin publish-form(content)
         form(method="POST" action="/admin/content?ref="+content.ref)
           +form-hiddeninput('status', 'published')
@@ -92,15 +123,29 @@ html
         for link in Array.from(content.entries())
           +link-form(link)
 
-      mixin content-list2( list )
-        ul(class="list-group")
-        for content in list
-          li(class="list-group-item d-flex justify-content-between align-items-center")
-            a(href='/admin/content?ref='+content.ref)=content.title
-          span(class="badge bg-primary rounded-pill")=content.size
-
       mixin content-bag(content)
-        p has #{content.size} children
+        div(class="row")
+          div(class="col-2")
+            b Items&nbsp;
+            small(class="") (#{content.size})
+          div(class="col")
+            form(method="GET" action="/admin/content?ref=new")
+              +form-hiddeninput('parentRef', content.ref)
+              +form-addbutton('Add')
+          for item in Array.from(content.entries())
+            div(class="row")
+              div(class="col p-1")=item.title
+              div(class="col-5")
+                a(href=item.link)=item.link
+              div(class="col text-end")
+                a(href="/admin/content?ref="+item.ref 
+                class="btn btn-sm btn-outline-primary") Edit
+
+      mixin form-contentselect(name, value)
+        select(class="form-select" name=name aria-label="content select")
+          for item in contentlist
+            - var selected = (item.ref == value)
+            option(value=item.ref selected=selected) #{item.title} (#{item.type})
 
       mixin settings-form()
         form(method="POST" action="/admin/settings")
@@ -115,54 +160,48 @@ html
 
           div(class="mb-3")
             button(type="submit" class="btn btn-primary") Submit
-            
-      mixin article-form()
-        form(method=form.method action=form.action)
-          
-          mixin form_input(input)
-            input(type=input.type class="floatingInput form-control" 
-              name=input.name
-              value=input.value id=input.id
-              aria-describedby=input.helpId)
-          mixin form_hidden(input)
-            input(type='hidden' name=input.name value=input.value)
-          mixin form_textarea(input)
-            br
-            textarea(
-              name=input.name
-              id=input.id
-              aria-describedby=input.helpId
-            )=input.value
-          mixin form_select(input)
-            select
-              option Draft
-              option Published
-          
-          each input in form.list()
-            
-            if input.type == 'textarea'
-              label(for=input.id class="floatingInput form-label")=input.label
-              +form_textarea(input)
-            else if input.type == 'hidden'
-              +form_input(input)
-            else if input.type == 'select'
-              label(for=input.id class="form-label")=input.label
-              +form_select(input)
-              div(id=input.helpId class="form-text")=input.helpText
-            else
-              label(for=input.id class="form-label")=input.label
-              +form_input(input)
-              div(id=input.helpId class="form-text")=input.helpText
-          
-          div(class="mb-3")
-            br
-            button(type="submit" class="btn btn-primary") Submit
     
+      mixin content-form( content )
+        div(class="container")
+          form(method="POST" action="/admin/content?ref="+content.ref)
+            div(class="row border-bottom border-secondary border-2")
+              h2(class="col")=content.title
+              div(class="col-2 p-1 gap-2 d-flex text-end")
+                //- col-sm d-grid p-1 gap-2 d-md-flex
+                +form-submitbuttom('Save')
+                +form-deletebutton('Delete')
+            br
+            +form-hiddeninput('ref', content.ref) 
+            div(class="row mb-3")
+              +form-label('title','Title')
+              div(class="col-sm-10")
+                +form-textinput('title',content.title)
+            div(class="row mb-3")
+              +form-label('status','Status')
+              div(class="col-sm-5")
+                +form-statusselect('status', content.status)
+              div(class="col-sm-5")
+                +form-dateinput('pubDate',content.pubDate)
+            div(class="row mb-3")
+              +form-label('link','Link')
+              div(class="col-sm-10")
+                +form-textinput('link',content.link)
+            div(class="row mb-3")
+              +form-label('content','Content')
+              if content.isBag
+                div(class="col-sm-10")
+                  +form-textinput('content',content.content)
+              else if content.type == 'link'
+                div(class="col-sm-10")
+                  +form-contentselect('content',content.content)
+              else
+                +form-textarea('content',content.content)
+                
+                
       mixin content-list( list )
         ul(class=" gx-5")
           each c in list
             li
-              
               - link = "/admin/content?ref=" + c.ref;
               a(href=link)=c.title
               span &nbsp;
@@ -170,11 +209,7 @@ html
                 if c.isBag
                   span &nbsp;
                   span(class="badge text-bg-info")=c.size
-              
-              
-              //- if c.isBag
-              //-   p dsgsfgfgsfdgsfdgsfd
-              //-   +content-list( Array.from(c.entries()) )
+
 
       block maincontent
       
@@ -185,16 +220,15 @@ html
         if page.title == 'content'
           div(class="col-3")
             +content-list(contentlist)
-            //- +content-list2(contentlist)
           div(class="col-9")
             if content
-              h2(class="border-bottom border-secondary border-2")=content.title
-              br
-              if content.type == 'socials'
-                +socials-form(content)
-              else
-                +article-form()
-              
+              +content-form(content)
+              //- if content.type == 'socials'
+              //-   h2(class="border-bottom border-secondary border-2")=content.title
+              //-   br
+              //-   +socials-form(content)
+              //- else
+              //-   +content-form(content)
               hr
               if content.isBag
                 +content-bag(content)
