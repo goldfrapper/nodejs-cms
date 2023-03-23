@@ -46,7 +46,7 @@ html
         button(type="submit" class="btn btn-primary btn-sm")=label
       
       mixin form-deletebutton( label )
-        button(type="submit" name="delete" class="btn btn-danger btn-sm")=label
+        button(type="submit" name="delete" class="btn btn-outline-danger btn-sm")=label
       
       mixin form-addbutton( label )
         button(type="submit" class="btn btn-success btn-sm")=label
@@ -105,6 +105,15 @@ html
               +form-hiddeninput('parentRef', content.ref)
             +form-addbutton('Link')
           
+      mixin linkcontent-buttons(item, parent)
+        form(method="POST" action="/admin/content")
+          +form-hiddeninput('parentRef', content.ref)
+          +form-hiddeninput('ref', item.ref)
+          div(class="input-group")
+            a(href="/admin/content?ref="+item.ref 
+            class="btn btn-sm btn-outline-primary") Edit
+            +form-deletebutton('Unlink')
+          
       mixin content-bag(content, list)
         div(class="row")
           div(class="col")
@@ -112,17 +121,13 @@ html
             small(class="") (#{content.size})
           div(class="col-4")
             +addcontent-button(content, list)
-          //- div(class="col-4")
-            +addnewcontent-button(content)
-          
         for item in Array.from(content.entries())
           div(class="row my-2")
             div(class="col-3")=item.title
             div(class="col")
               a(href=item.link)=item.link
-            div(class="col-1 text-end")
-              a(href="/admin/content?ref="+item.ref 
-              class="btn btn-sm btn-outline-primary") Edit
+            div(class="col-2")
+              +linkcontent-buttons(item, content)
 
       mixin form-contentselect(name, value, list)
         select(class="form-select" name=name aria-label="content select")
