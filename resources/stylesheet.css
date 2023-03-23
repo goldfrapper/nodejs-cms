@@ -1,0 +1,39 @@
+.branding {
+
+  position: relative;
+
+  /* border-bottom-left-radius: 20px; */
+  /* border-bottom-right-radius: 20px; */
+
+  /* background-attachment: fixed; */
+  /* background-size: contain; */
+  /* background-position: 0px -250px; */
+
+  background-size: cover;
+  /* background-position: center; */
+  background-position: bottom;
+
+  background-repeat: no-repeat;
+  min-height: 60vh;
+  background-color: #ffffff99;
+  background-blend-mode: hard-light;
+  background-image: url('/resources/regenboog-over-land.jpg');
+}
+
+.navbar {
+  --bs-bg-opacity: .3;
+  /* background-color: #ffffff; */
+}
+
+.maincontent {
+  /* background-image: url('/resources/regenboog-over-land.jpg'); */
+  /* background-attachment: fixed; */
+
+  background-image: url('/resources/background-grass.png');
+  background-repeat: repeat;
+  /* background-color: #84973e; */
+}
+
+  body {
+    font-family: 'Arial', sans-serif;
+  }

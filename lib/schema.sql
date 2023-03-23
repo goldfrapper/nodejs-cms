@@ -12,6 +12,9 @@ INSERT INTO settings_kv (key,name,note,value,type) VALUES
 ('site_title','Site title','Site title','My Title','text'),
 ('site_subtitle','Site subtitle','Site subtitle','My Subtitle','text');
 
+INSERT INTO settings_kv (key,name,note,value,type) VALUES
+('site_brand','Site brand','Site brand','My Brand','text');
+
 CREATE TABLE IF NOT EXISTS content (
   ref TEXT NOT NULL UNIQUE ON CONFLICT ROLLBACK,
   type TEXT NOT NULL,
@@ -76,3 +79,15 @@ order by parentRef ASC, sorder ASC
 select content.* from content
 where 1
 and content.ref NOT IN (SELECT distinct ref FROM content_xref)
+
+
+
+select taxa.taxonID, taxa.scientificName, namen.vernacularName from taxa left outer join namen using(taxonID)
+-- where namen.vernacularName  like '%prei%'
+where taxa.scientificName like '%allium%'
+
+select taxa.taxonID, taxa.scientificName, namen.vernacularName, media.accessURI
+from taxa
+left outer join namen using(taxonID)
+left outer join media on media.id = taxa.taxonID
+where namen.vernacularName  like '%duizendblad%'

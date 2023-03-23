@@ -38,19 +38,19 @@ html
           value=value id=id
           aria-describedby=helpId)
         div(id=helpId class="form-text")=helpText
-      mixin form-floating-input( name, value, label)
-        - var id = name+'_Id';
-        div(class="form-floating mb-3")
-          input(type="text" name=name value=value class="form-control" id=id)
-          label(for="floatingInput")=label
+      
       mixin form-hiddeninput(name, value)
         input(type="hidden" name=name value=value)
+      
       mixin form-submitbuttom( label )
         button(type="submit" class="btn btn-primary btn-sm")=label
+      
       mixin form-deletebutton( label )
         button(type="submit" name="delete" class="btn btn-danger btn-sm")=label
+      
       mixin form-addbutton( label )
         button(type="submit" class="btn btn-success btn-sm")=label
+        
       mixin form-switch(name, label)
         - var id = name+'_Id';
         div(class="form-check form-switch")
@@ -63,10 +63,12 @@ html
           name=name
           id="exampleFormControlTextarea1"
           rows="10")=value
+          
       mixin form-dateinput(name, value)
         input(
           type="date" class="form-control form-control-sm"
           name=name value=value)
+          
       mixin form-statusselect(name, value)
         - var id = name+'_Id';
         div(class="btn-group" role="group")
@@ -79,71 +81,52 @@ html
             label(
               class="btn btn-outline-primary btn-sm btn-outline-secondary" 
               for=id)=s
-
-      mixin link-form(link)
-        if !link
-          - link = {ref:'',title:'',link:''}
-        form(method="POST" action="/admin/content?ref="+link.ref)
-          div(class="row grid gap-1 row-gap-3")
-            div(class="col-sm-4 p-1")
-              +form-textinput('title',link.title)
-            div(class="col-sm-4 p-1")
-              +form-textinput('link',link.link)
-            div(class="col-sm d-grid p-1 gap-2 d-md-flex justify-content-md-end")
-              if (link.ref)
-                +form-submitbuttom('Save')
-                +form-deletebutton('Delete')
-              else
-                +form-addbutton('Add')
-
-      mixin publish-form(content)
-        form(method="POST" action="/admin/content?ref="+content.ref)
-          +form-hiddeninput('status', 'published')
-          +form-switch('publish', 'Publish')
-          
-      mixin socials-form(content)
-        form(method="POST" action="/admin/content?ref="+content.ref)
-          div(class="row")
-            div(class="col-2")
-              +form-label('title','Title')
-            div(class="col-6")
-              //- +form-floating-input('title', content.title, 'Title')
-              +form-textinput('title',content.title)
-            div(class="col-2")
-              +form-switch('publish', 'Publish')
-            div(class="col-2 justify-content-md-end")
-              +form-submitbuttom('Submit')
-        hr
-        div(class="row fw-bold")
-          div(class="col")
-            +form-label('title','Title')
-          div(class="col")
-            +form-label('link','Link')
-          div(class="col")
-        for link in Array.from(content.entries())
-          +link-form(link)
-
-      mixin content-bag(content)
-        div(class="row")
-          div(class="col-2")
-            b Items&nbsp;
-            small(class="") (#{content.size})
-          div(class="col")
-            form(method="GET" action="/admin/content?ref=new")
+      
+      mixin addnewcontent-button(content)
+        form(method="GET" action="/admin/content")
+          div(class="input-group")
+            select(class="form-select form-select-sm" name="type")
+              option add new content...
+              for type in contentTypes
+                option(value=type) new #{type}
+            if content
               +form-hiddeninput('parentRef', content.ref)
-              +form-addbutton('Add')
-          for item in Array.from(content.entries())
-            div(class="row")
-              div(class="col p-1")=item.title
-              div(class="col-5")
-                a(href=item.link)=item.link
-              div(class="col text-end")
-                a(href="/admin/content?ref="+item.ref 
-                class="btn btn-sm btn-outline-primary") Edit
+            +form-hiddeninput('ref', 'new')
+            +form-addbutton('Add')
+      
+      mixin addcontent-button(content, list)
+        form(method="POST" action="/admin/content")
+          div(class="input-group")
+            select(class="form-select form-select-sm" name="ref")
+              option link content...
+              for content in list
+                option(value=content.ref) #{content.title} (#{content.type})
+            if content
+              +form-hiddeninput('parentRef', content.ref)
+            +form-addbutton('Link')
+          
+      mixin content-bag(content, list)
+        div(class="row")
+          div(class="col")
+            span Items&nbsp;
+            small(class="") (#{content.size})
+          div(class="col-4")
+            +addcontent-button(content, list)
+          //- div(class="col-4")
+            +addnewcontent-button(content)
+          
+        for item in Array.from(content.entries())
+          div(class="row my-2")
+            div(class="col-3")=item.title
+            div(class="col")
+              a(href=item.link)=item.link
+            div(class="col-1 text-end")
+              a(href="/admin/content?ref="+item.ref 
+              class="btn btn-sm btn-outline-primary") Edit
 
-      mixin form-contentselect(name, value)
+      mixin form-contentselect(name, value, list)
         select(class="form-select" name=name aria-label="content select")
-          for item in contentlist
+          for item in list
             - var selected = (item.ref == value)
             option(value=item.ref selected=selected) #{item.title} (#{item.type})
 
@@ -161,45 +144,59 @@ html
           div(class="mb-3")
             button(type="submit" class="btn btn-primary") Submit
     
-      mixin content-form( content )
+      mixin content-form( content, list )
         div(class="container")
           form(method="POST" action="/admin/content?ref="+content.ref)
-            div(class="row border-bottom border-secondary border-2")
-              h2(class="col")=content.title
-              div(class="col-2 p-1 gap-2 d-flex text-end")
-                //- col-sm d-grid p-1 gap-2 d-md-flex
-                +form-submitbuttom('Save')
-                +form-deletebutton('Delete')
-            br
-            +form-hiddeninput('ref', content.ref) 
-            div(class="row mb-3")
+            div(class="row mb-4 border-bottom border-secondary border-2")
+              //- - var title = content.title || ('New '+content.type)
+              h2(class="col") #{content.title || ('New '+content.type)}
+              //- div(class="col-2 p-1 gap-2 text-end")
+              div(class="col")
+                div(class="input-group input-group-sm")
+                  +form-submitbuttom('Save')
+                  +form-deletebutton('Delete')
+            
+            +form-hiddeninput('ref', content.ref)
+            +form-hiddeninput('type', content.type)
+            div(class="row mb-1")
               +form-label('title','Title')
               div(class="col-sm-10")
                 +form-textinput('title',content.title)
-            div(class="row mb-3")
+            div(class="row mb-1")
               +form-label('status','Status')
               div(class="col-sm-5")
                 +form-statusselect('status', content.status)
               div(class="col-sm-5")
                 +form-dateinput('pubDate',content.pubDate)
-            div(class="row mb-3")
+            div(class="row mb-1")
               +form-label('link','Link')
               div(class="col-sm-10")
                 +form-textinput('link',content.link)
-            div(class="row mb-3")
+            div(class="row mb-1")
               +form-label('content','Content')
-              if content.isBag
+              
+              if content.type == 'link'
+                div(class="col-sm-10")
+                  +form-contentselect('content',content.content, list)
+              else if content.type == 'article'
+                +form-textarea('content',content.content)
+              else
                 div(class="col-sm-10")
                   +form-textinput('content',content.content)
-              else if content.type == 'link'
-                div(class="col-sm-10")
-                  +form-contentselect('content',content.content)
-              else
-                +form-textarea('content',content.content)
                 
                 
       mixin content-list( list )
-        ul(class=" gx-5")
+        br
+        +addnewcontent-button()
+        hr
+        ul(class="nav nav-tabs nav-justified")
+          - types = ['articles', 'menus','links'];
+          each type in types
+            - let c = 'nav-link' + ((type == 'articles')? ' active':'');
+            li(class="nav-item")
+              a(class=c aria-current="page" href="#")=type
+        br
+        ul(class="nav flex-column")
           each c in list
             li
               - link = "/admin/content?ref=" + c.ref;
@@ -209,29 +206,24 @@ html
                 if c.isBag
                   span &nbsp;
                   span(class="badge text-bg-info")=c.size
-
+        
 
       block maincontent
       
-      div(class="row align-items-start justify-content-start")
+      div(class="row")
         if page.title == 'settings'
           +settings-form()
       
         if page.title == 'content'
-          div(class="col-3")
-            +content-list(contentlist)
+          - var list = Object.fromEntries(contentlist);
+          div(class="col-3 bg-secondary-subtle")
+            +content-list( list )
           div(class="col-9")
             if content
-              +content-form(content)
-              //- if content.type == 'socials'
-              //-   h2(class="border-bottom border-secondary border-2")=content.title
-              //-   br
-              //-   +socials-form(content)
-              //- else
-              //-   +content-form(content)
+              +content-form(content, list)
               hr
               if content.isBag
-                +content-bag(content)
+                +content-bag(content, list)
       
         
 
