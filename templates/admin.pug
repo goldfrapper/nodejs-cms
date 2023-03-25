@@ -58,6 +58,9 @@ html
           label(class="form-check-label" for=id)=label
 
       mixin form-textarea(name, value)
+        div(class="text-end")
+          a(href="https://www.markdownguide.org/cheat-sheet/" 
+            target="_blank") Markdown Cheatsheet
         textarea(
           class="form-control"
           name=name
@@ -183,7 +186,7 @@ html
               if content.type == 'link'
                 div(class="col-sm-10")
                   +form-contentselect('content',content.content, list)
-              else if content.type == 'article'
+              else if content.editor
                 +form-textarea('content',content.content)
               else
                 div(class="col-sm-10")
@@ -194,23 +197,24 @@ html
         br
         +addnewcontent-button()
         hr
-        ul(class="nav nav-tabs nav-justified")
-          - types = ['articles', 'menus','links'];
-          each type in types
-            - let c = 'nav-link' + ((type == 'articles')? ' active':'');
-            li(class="nav-item")
-              a(class=c aria-current="page" href="#")=type
-        br
+        //- ul(class="nav nav-tabs nav-justified")
+        //-   - types = ['articles', 'menus','links'];
+        //-   each type in types
+        //-     - let c = 'nav-link' + ((type == 'articles')? ' active':'');
+        //-     li(class="nav-item")
+        //-       a(class=c aria-current="page" href="#")=type
+        //- br
         ul(class="nav flex-column")
           each c in list
-            li
-              - link = "/admin/content?ref=" + c.ref;
-              a(href=link)=c.title
-              span &nbsp;
-              span(class="badge text-bg-light")=c.type
-                if c.isBag
-                  span &nbsp;
-                  span(class="badge text-bg-info")=c.size
+            if typeof c == 'object'
+              li
+                - link = "/admin/content?ref=" + c.ref;
+                a(href=link)=c.title
+                span &nbsp;
+                span(class="badge text-bg-light")=c.type
+                  if c.isBag
+                    span &nbsp;
+                    span(class="badge text-bg-info")=c.size
         
 
       block maincontent
@@ -218,9 +222,27 @@ html
       div(class="row")
         if page.title == 'settings'
           +settings-form()
+        
+        else if page.title == 'plugins'
+          div(class="col-3 bg-secondary-subtle")
+            
+            nav(class="nav flex-column")  
+              each plugin in Array.from(plugins.values())
+                a(class="nav-link active" aria-current="page" 
+                  href=plugin.link) #{plugin.name}
+                
+          div(class="col-9")
+            block plugin
+              if plugin
+                h3=plugin.name
+                hr
+            
+            
+              
       
-        if page.title == 'content'
-          - var list = Object.fromEntries(contentlist);
+        else if page.title == 'content'
+          - var list = Array.from(contentlist);
+          //- - console.log(Array.from(contentlist));
           div(class="col-3 bg-secondary-subtle")
             +content-list( list )
           div(class="col-9")

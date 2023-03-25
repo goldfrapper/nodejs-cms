@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS content (
 CREATE TABLE content_xref (
   ref TEXT NOT NULL,
   parentRef TEXT NOT NULL,
-  sorder NUMBER DEFAULT 0
+  sorder NUMBER DEFAULT 0,
+  FOREIGN KEY(ref) REFERENCES content(ref)
 );
 
 -- Articles
@@ -59,6 +60,16 @@ INSERT INTO content (ref,type,title,link) VALUES ('instagram','link','Instagram'
 INSERT INTO content_xref (parentRef,ref,sorder) VALUES ('socials','twitter',1);
 INSERT INTO content_xref (parentRef,ref,sorder) VALUES ('socials','facebook',2);
 INSERT INTO content_xref (parentRef,ref,sorder) VALUES ('socials','instagram',3);
+
+-- Content Meta
+CREATE TABLE content_meta (
+  ref TEXT NOT NULL,
+  key TEXT NOT NULL,
+  value TEXT DEFAULT 0,
+  CONSTRAINT ref_key UNIQUE (ref, key),
+  FOREIGN KEY(ref) REFERENCES content(ref)
+);
+
 
 -- Get Content Bag
 SELECT content.* FROM content
