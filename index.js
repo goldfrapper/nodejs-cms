@@ -5,8 +5,11 @@
  **/
 
 const http = require('http');
-const {WebService} = require(__dirname + '/lib/webservice.js');
 const {System} = require(__dirname + '/lib/system.js');
+
+System.runTests();
+
+const {WebService} = System.require('webservice');
 
 const hostname = System.tier.hostname;
 const port = System.tier.port;
@@ -17,7 +20,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+  System.log(`Server running at http://${hostname}:${port}/`,'SYS');
 });
 process.on('SIGTERM', ()=>{
   server.close(()=>{ console.log('Process terminated') })
