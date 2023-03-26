@@ -30,7 +30,7 @@ CREATE TABLE content_xref (
   ref TEXT NOT NULL,
   parentRef TEXT NOT NULL,
   sorder NUMBER DEFAULT 0,
-  FOREIGN KEY(ref) REFERENCES content(ref)
+  FOREIGN KEY(ref) REFERENCES content(ref) ON DELETE CASCADE
 );
 
 -- Articles
@@ -67,7 +67,7 @@ CREATE TABLE content_meta (
   key TEXT NOT NULL,
   value TEXT DEFAULT 0,
   CONSTRAINT ref_key UNIQUE (ref, key),
-  FOREIGN KEY(ref) REFERENCES content(ref)
+  FOREIGN KEY(ref) REFERENCES content(ref) ON DELETE CASCADE
 );
 
 

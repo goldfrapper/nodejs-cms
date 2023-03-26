@@ -4,15 +4,53 @@ block plugin
   h3=plugin.name
   hr
   
-  form(action="" method="GET")
-    div(class="input-group input-group-sm mb-3")
-      input(type="hidden" name="plugin" value="plant")
-      input(type="text" class="form-control" name="query")
-      button(class="btn btn-outline-secondary" type="submit") Search
-  
-      //- <div class="form-check form-check-inline">
-      //-   <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
-      //-   <label class="form-check-label" for="inlineCheckbox1">1</label>
-      //- </div>
-      
+    //- hr
+  div
+    h5 Added Plants
+    div(class="row gx-5")
+      if !content.size
+        div(class="col-12")
+          div(class="alert alert-info" role="alert") There are no linked plants yet!
+      each plant in Array.from(content.values())
+        - var link = '/admin/content?ref='+plant.ref;
+        form(method="POST" action="/admin/plugins?plugin=plant"
+        class="col-12 col-sm-6")
+          a(href=link class="me-2")=plant.title
+          input(type="hidden" name="ref" value=plant.ref)
+          button(class="btn btn-sm btn-outline-danger" 
+            name="remove" type="submit") Remove
+        
+    hr
+    div(class="row")
+      if query
+        h5(class="col-4") Results for '#{query}'
+        
+      else
+        h5(class="col-3") Search Plants
+      form(class="col" action="" method="GET")
+        div(class="input-group input-group-sm mb-3 col")  
+          input(type="hidden" name="plugin" value="plant")
+          input(id="search" type="text" class="form-control" name="query" value=query)
+          button(class="btn btn-outline-primary" type="submit") Search
+    if query
+      if !plants.size
+        div(class="alert alert-info" role="alert") There are no results!
+      else
+        
+        form(method="POST" action="/admin/plugins?plugin=plant")
+          
+          div(class="input-group input-group-sm mb-3")
+            //- +form-label('parentRef', 'Select Catalog: ')
+            label(class="input-group-text" for="parentRef_id") Select Catalog:
+            +form-contentselect('parentRef', '', contentlist)
+            button(class="btn btn-primary" name="add" type="submit") Add
+
+          div(class="row m-3")
+            each plant in Array.from(plants.values())
+              div(class="form-check col-sm-6")
+                input(class="form-check-input" type="checkbox"
+                  name="taxonIds" value=plant.taxonID id=plant.taxonID)
+                label(class="form-check-label" for=plant.taxonID)
+                  b #{plant.vernacularName || '--'}
+                  i &nbsp; (#{plant.scientificName}) 
       
