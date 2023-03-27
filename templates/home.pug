@@ -56,25 +56,27 @@ html
       block maincontent
         div(class="maincontent container ps-5 pe-5")
           div(class=" bg-white")
-            if content.editor
-              div !{content.renderMarkdown()}
-            else
-              if content.content
-                div=content.content
-              else
-                h3=content.title
             
-            if content.isBag
-              div(class="row")
-                each c in Array.from(content.entries())
-                  //- - console.log(c.meta);
-                  div(class="col")
-                    div(class="card")
-                      img(src="" class="card-img-top" alt="...")
-                      div(class="card-body")
-                        h5(class="card-title")=c.title
-                        h6(class="card-subtitle mb-2 text-body-secondary") Card subtitle
-                        //- p(class="card-text") !{c.renderMarkdown()}
-                        a(href=c.link class="btn btn-primary") View
+            block content
+              if content.editor
+                div !{content.renderMarkdown()}
+              else
+                if content.content
+                  div=content.content
+                else
+                  h3=content.title
+              
+              if content.isBag
+                div(class="row")
+                  each c in Array.from(content.entries())
+                    //- - console.log(c.meta);
+                    div(class="col")
+                      div(class="card")
+                        img(src="" class="card-img-top" alt="...")
+                        div(class="card-body")
+                          h5(class="card-title")=c.title
+                          h6(class="card-subtitle mb-2 text-body-secondary") Card subtitle
+                          //- p(class="card-text") !{c.renderMarkdown()}
+                          a(href=c.link class="btn btn-primary") View
 
       include footer.pug

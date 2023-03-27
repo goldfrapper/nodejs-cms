@@ -9,7 +9,7 @@
 const dir = __dirname.substring(0, __dirname.indexOf('/plugin/'));
 const {System} = require(dir + '/lib/system.js');
 const {SQLiteStorage} = System.require('SQLiteStorage');
-const {Content} = System.require('content');
+const {Content,ContentBag} = System.require('content');
 
 class PlantStorage extends SQLiteStorage
 {
@@ -79,6 +79,10 @@ class Plant extends Content {
   get editor() { return true; }
 }
 Content.registerContentType('plant', Plant);
+
+class Garden extends ContentBag {}
+Content.registerContentType('garden', Garden);
+Content.registerContentTemplate('garden', __dirname+'/garden.pug');
 
 class Service
 {
@@ -177,7 +181,7 @@ class Service
     if(content.size) {
       const ref = Array.from(content.keys())[0];
       const xref = await Content.getContentXRef(ref);
-      console.log(xref);
+      service.data.parentRef = xref.parentRef;
     }
 
     const query = service.getParam('query');
