@@ -31,7 +31,7 @@ html
 
           div(class="col-12 col-md-6 col-lg-6 col-xl-5" id="navbarNav")
             ul(class="nav justify-content-center nav-fill")
-              for item in Array.from(menu.entries())
+              for item in Array.from(menu.entries().values())
                 li(class="nav-item")
                   a(class="nav-link p-0 pe-3 pt-2 text-dark" href=item.link)=item.title
 

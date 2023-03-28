@@ -11,11 +11,21 @@ const {System} = require(dir + '/lib/system.js');
 const {SQLiteStorage} = System.require('SQLiteStorage');
 const {Content,ContentBag} = System.require('content');
 
+class Species {
+  taxonID;
+  order;
+  family;
+  genus;
+  scientificName;
+  vernacularName = [];
+  images = [];
+}
+
 class PlantStorage extends SQLiteStorage
 {
   getPlants(filter)
   {
-    let sql = '', params = [];
+    let sql = '',join = '',where = '',limit = '', params = [];
 
     const cols = [
       'taxa.taxonID',
@@ -23,26 +33,66 @@ class PlantStorage extends SQLiteStorage
       'taxa.family',
       'taxa.genus',
       'taxa.scientificName',
-      'namen.vernacularName'
+      // 'namen.vernacularName',
+      'json_group_array(namen.vernacularName) as vernacularName',
+      // 'json_group_array(media.accessURI) as images',
+      'images'
     ];
 
-    sql += 'SELECT '+cols.join(',')+' FROM taxa ';
-    sql += 'left outer join namen using(taxonID) ';
-
     if(filter.query) {
-      sql += 'WHERE namen.vernacularName LIKE ? ';
-      sql += 'OR taxa.scientificName LIKE ? ';
+      where += 'AND namen.vernacularName LIKE ? ';
+      where += 'OR taxa.scientificName LIKE ? ';
       params.push('%'+filter.query+'%', '%'+filter.query+'%');
     }
     else if(filter.taxonID) {
-      sql += 'WHERE taxa.taxonID = ? ';
-      sql += 'LIMIT 1 ';
+      where += 'AND taxa.taxonID = ? ';
+      limit += 'LIMIT 1 ';
       params.push(filter.taxonID);
     }
+    else if(filter.taxonIDs) {
+      where += 'AND taxa.taxonID IN(?) ';
+      params.push(filter.taxonIDs);
+    }
 
-    const plants = new Set();
+    if(filter.parentId) {
+      join += `inner join (
+        select distinct content_meta2.value as tid from content_meta2
+        inner join content_xref using(ref)
+        where content_xref.parentRef=? and content_meta2.key="taxonID"
+      ) on taxa.taxonID=tid `;
+      params.push(filter.parentId);
+    }
+
+    join += `LEFT OUTER JOIN (select id as mid, json_group_array(json_object(
+      'license', media.license,
+      'holder', media.rightsHolder,
+      'uri', media.accessURI)
+    ) as images from media group by mid) on taxa.taxonID=mid `;
+
+    sql = `
+      SELECT ${cols.join(',')} FROM taxa
+      LEFT OUTER JOIN namen USING(taxonID)
+      LEFT OUTER JOIN media ON taxonID=media.id
+      ${join}
+      WHERE 1 ${where} GROUP BY taxonID ${limit}`;
+
+    const plants = new Map();
+    const parse = ['vernacularName','images'];
+
     return this._getPromise('each',sql, params, (row)=>{
-      plants.add(row);
+
+      const species = new Species();
+      for(const v in row) {
+
+// if(v == 'images') console.log(JSON.parse(row[v]));
+
+        if(parse.indexOf(v) != -1) {
+          if(row[v] != '[null]') species[v] = JSON.parse(row[v]);
+        }
+        else (v in species) && (species[v] = row[v]);
+      }
+      plants.set(species.taxonID, species);
+
     }).then(x=>{
       if(filter.taxonID) return plants.values().next().value;
       else return plants;
@@ -64,12 +114,29 @@ class PlantStorage extends SQLiteStorage
       return content;
     }).catch( err => this._dbError(err) );
   }
+
+  checkIfPlantIsLinked( parentRef, taxonID )
+  {
+    let sql = '', params = [];
+
+    sql += 'select count(*) from content ';
+    sql += 'inner join content_xref using(ref) ';
+    sql += 'inner join content_meta using(ref) ';
+    sql += 'where parentRef=? ';
+    sql += 'and content_meta.key="taxonID" ';
+    sql += 'and content_meta.value=? ';
+
+    return this._getPromise('run',sql, [parentRef, taxonID], (row)=>{
+      console.log(row);
+    }).catch( err => this._dbError(err) );
+  }
 }
 
 class PlantFilter
 {
   query;
   taxonID;
+  taxonIDs;
   constructor(options) {
     for(const k in options) this[k] = options[k];
   }
@@ -80,7 +147,50 @@ class Plant extends Content {
 }
 Content.registerContentType('plant', Plant);
 
-class Garden extends ContentBag {}
+class Garden extends ContentBag
+{
+  #_plants = new Map();
+
+  // async getPlantInfo( taxonID )
+  // {
+  //   // console.log('start');
+  //   // const info = await Service.getPlantInfo(taxonID);
+  //   // console.log('Stop');
+  //   // return info;
+  //   return {};
+  // }
+
+  handleRequest()
+  {
+    // Get data for all linked plants
+    console.log(this.ref);
+
+
+  }
+
+  // entries() {
+  //   // const taxonIDs = [];
+  //   const plants = super.entries();
+  //
+  //   // const load = (async function() {
+  //   //   return await Service.getPlantInfo('mqirqtkswj');
+  //   //   // return ;
+  //   // })();
+  //
+  //   // console.log(load);
+  //
+  //   // for(const p of plants) taxonIDs.push(p.meta.taxonID);
+  //   //
+  //   // const storage = new PlantStorage();
+  //   // await storage.getPlants(new PlantFilter({
+  //   //   taxonIDs: taxonIDs
+  //   // })).then(x => {
+  //   //   console.log(x);
+  //   // });
+  //
+  //   return plants;
+  // }
+}
 Content.registerContentType('garden', Garden);
 Content.registerContentTemplate('garden', __dirname+'/garden.pug');
 
@@ -95,6 +205,13 @@ class Service
     const storage = new PlantStorage();
     return storage.getPlants(new PlantFilter({
       query: query
+    }).then(x => resolve(x)));
+  }
+
+  static getPlantsForContent( contentRef ) {
+    const storage = new PlantStorage();
+    return storage.getPlants(new PlantFilter({
+      parentRef: contentRef
     }));
   }
 
@@ -103,6 +220,11 @@ class Service
     return storage.getPlants(new PlantFilter({
       taxonID: taxonID
     }));
+  }
+
+  static async isPlantLinked( parentRef, taxonID) {
+    const storage = new PlantStorage();
+    return await storage.checkIfPlantIsLinked(parentRef, taxonID);
   }
 
   static getPlantContent()
@@ -163,10 +285,19 @@ class Service
         const parentRef = post.get('parentRef');
         const taxonIDs = post.get('taxonIds');
 
-        if(typeof taxonIDs === 'string') {
-          const res = await Service.addPlantContent(taxonIDs, parentRef);
+        // Check for doubles
+        if(Service.isPlantLinked( parentRef, taxonID)) {
+          console.log('Plant already linked jong!!');
         }
-        else for(const taxonID of taxonIDs) {
+
+        // if(typeof taxonIDs === 'string') {
+        //   const res = await Service.addPlantContent(taxonIDs, parentRef);
+        // }
+        // else for(const taxonID of taxonIDs) {
+        //   const res = await Service.addPlantContent(taxonID, parentRef);
+        // }
+        if(typeof taxonIDs === 'string') taxonIDs = [taxonIDs];
+        for(const taxonID of taxonIDs) {
           const res = await Service.addPlantContent(taxonID, parentRef);
         }
       } else {

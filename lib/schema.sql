@@ -102,3 +102,22 @@ from taxa
 left outer join namen using(taxonID)
 left outer join media on media.id = taxa.taxonID
 where namen.vernacularName  like '%duizendblad%'
+
+
+
+insert into content_meta (ref, key, value)
+select ref, 'image', media.accessURI from media
+left outer join content_meta ON value=media.id
+where key='taxonID'
+
+
+select taxonID, scientificName,  taxa.`order`, taxa.family,  taxa.genus, json_group_array(namen.vernacularName) as name, media.accessURI
+from taxa
+left outer join namen using(taxonID)
+left outer join media on taxonID=media.Identifier
+inner join (
+  select distinct content_meta2.value as tid from content_meta2
+  inner join content_xref using(ref)
+  where content_xref.parentRef="hsismvqkka" and content_meta2.key="taxonID"
+) on taxa.taxonID=tid
+group by taxonID

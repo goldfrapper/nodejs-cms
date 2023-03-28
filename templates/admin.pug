@@ -50,6 +50,9 @@ html
       
       mixin form-addbutton( label )
         button(type="submit" class="btn btn-success btn-sm")=label
+      
+      mixin form-infobutton( label )
+        button(type="submit" class="btn btn-outline-info btn-sm")=label
         
       mixin form-switch(name, label)
         - var id = name+'_Id';
@@ -96,6 +99,16 @@ html
               +form-hiddeninput('parentRef', content.ref)
             +form-hiddeninput('ref', 'new')
             +form-addbutton('Add')
+      
+      mixin filter-contenttype-button()
+        form(method="GET" action="")
+          div(class="input-group")
+            select(class="form-select form-select-sm" name="type")
+              option(value="bag") Select Content type...
+              for type in contentTypes
+                - let selected = (type == contentType)
+                option(value=type selected=selected) #{type}
+            +form-infobutton('Filter')
       
       mixin addcontent-button(content, list)
         form(method="POST" action="/admin/content")
@@ -193,20 +206,24 @@ html
                   +form-textinput('content',content.content)
                 
                 
-      mixin content-list( list )
+      mixin content-list( list, onlyBags )
+        - onlyBags = onlyBags || false;
+        - let selectedTypes = [];
+        - if(contentType) selectedTypes.push(contentType);
         br
         +addnewcontent-button()
         hr
-        //- ul(class="nav nav-tabs nav-justified")
-        //-   - types = ['articles', 'menus','links'];
-        //-   each type in types
-        //-     - let c = 'nav-link' + ((type == 'articles')? ' active':'');
-        //-     li(class="nav-item")
-        //-       a(class=c aria-current="page" href="#")=type
-        //- br
+        +filter-contenttype-button()
+        br
         ul(class="nav flex-column")
-          each c in list
-            if typeof c == 'object'
+          
+          each c in Array.from(list)
+            
+            - let selected = (selectedTypes.indexOf(c.type) != -1) || false
+            - if (!contentType) selected = (!onlyBags || c.isBag)
+            - if(contentType == 'bag' && c.isBag) selected = true;
+
+            if typeof c === 'object' && selected
               li
                 - link = "/admin/content?ref=" + c.ref;
                 a(href=link)=c.title
@@ -225,26 +242,19 @@ html
         
         else if page.title == 'plugins'
           div(class="col-3 bg-secondary-subtle")
-            
             nav(class="nav flex-column")  
               each plugin in Array.from(plugins.values())
                 a(class="nav-link active" aria-current="page" 
                   href=plugin.link) #{plugin.name}
                 
           div(class="col-9")
-            block plugin
-              if plugin
-                h3=plugin.name
-                hr
-            
-            
-              
+            block plugin    
       
         else if page.title == 'content'
           - var list = Array.from(contentlist);
           //- - console.log(Array.from(contentlist));
           div(class="col-3 bg-secondary-subtle")
-            +content-list( list )
+            +content-list( contentlist, true )
           div(class="col-9")
             if content
               +content-form(content, list)

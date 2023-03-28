@@ -12,12 +12,13 @@ block content
   if content.isBag
     div(class="row")
       each c in Array.from(content.entries())
-        //- - console.log(c.meta);
+        //- - let info = content.getPlantInfo(c.meta.taxonID)
+        //- - console.log(info);
         div(class="col")
           div(class="card")
             img(src="" class="card-img-top" alt="...")
             div(class="card-body")
               h5(class="card-title")=c.title
-              h6(class="card-subtitle mb-2 text-body-secondary") Card subtitle
+              h6(class="card-subtitle mb-2 text-body-secondary") #{c.meta.taxonID}
               //- p(class="card-text") !{c.renderMarkdown()}
               a(href=c.link class="btn btn-primary") View
