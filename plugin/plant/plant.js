@@ -34,7 +34,8 @@ class PlantStorage extends SQLiteStorage
       'taxa.genus',
       'taxa.scientificName',
       // 'namen.vernacularName',
-      'json_group_array(namen.vernacularName) as vernacularName',
+      // 'json_group_array(namen.vernacularName) as vernacularName',
+      'vernacularNames',
       // 'json_group_array(media.accessURI) as images',
       'images'
     ];
@@ -69,6 +70,11 @@ class PlantStorage extends SQLiteStorage
       'uri', media.accessURI)
     ) as images from media group by mid) on taxa.taxonID=mid `;
 
+    join += `LEFT OUTER JOIN (
+      SELECT taxonID,  JSON_GROUP_ARRAY(vernacularName) AS vernacularNames
+      FROM namen GROUP BY taxonID ORDER BY taxonID
+    ) using(taxonID)`;
+
     sql = `
       SELECT ${cols.join(',')} FROM taxa
       LEFT OUTER JOIN namen USING(taxonID)
@@ -77,7 +83,7 @@ class PlantStorage extends SQLiteStorage
       WHERE 1 ${where} GROUP BY taxonID ${limit}`;
 
     const plants = new Map();
-    const parse = ['vernacularName','images'];
+    const parse = ['vernacularNames','images'];
 
     return this._getPromise('each',sql, params, (row)=>{
 
@@ -151,45 +157,15 @@ class Garden extends ContentBag
 {
   #_plants = new Map();
 
-  // async getPlantInfo( taxonID )
-  // {
-  //   // console.log('start');
-  //   // const info = await Service.getPlantInfo(taxonID);
-  //   // console.log('Stop');
-  //   // return info;
-  //   return {};
-  // }
-
-  handleRequest()
+  getPlantInfo( taxonID )
   {
-    // Get data for all linked plants
-    console.log(this.ref);
-
-
+    return this.#_plants.get(taxonID);
   }
 
-  // entries() {
-  //   // const taxonIDs = [];
-  //   const plants = super.entries();
-  //
-  //   // const load = (async function() {
-  //   //   return await Service.getPlantInfo('mqirqtkswj');
-  //   //   // return ;
-  //   // })();
-  //
-  //   // console.log(load);
-  //
-  //   // for(const p of plants) taxonIDs.push(p.meta.taxonID);
-  //   //
-  //   // const storage = new PlantStorage();
-  //   // await storage.getPlants(new PlantFilter({
-  //   //   taxonIDs: taxonIDs
-  //   // })).then(x => {
-  //   //   console.log(x);
-  //   // });
-  //
-  //   return plants;
-  // }
+  async handleRequest()
+  {
+    this.#_plants = await Service.getPlantsForContent(this.ref);
+  }
 }
 Content.registerContentType('garden', Garden);
 Content.registerContentTemplate('garden', __dirname+'/garden.pug');
@@ -205,7 +181,7 @@ class Service
     const storage = new PlantStorage();
     return storage.getPlants(new PlantFilter({
       query: query
-    }).then(x => resolve(x)));
+    }));
   }
 
   static getPlantsForContent( contentRef ) {
@@ -307,6 +283,10 @@ class Service
       service.redirect('/admin/plugins?plugin=plant');
       return;
     }
+
+    //
+    // HTTP GET
+    //
 
     const content = await Service.getPlantContent();
     if(content.size) {

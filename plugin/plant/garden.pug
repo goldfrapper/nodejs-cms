@@ -12,13 +12,19 @@ block content
   if content.isBag
     div(class="row")
       each c in Array.from(content.entries())
+        - const plant = content.getPlantInfo(c.meta.taxonID);
         //- - let info = content.getPlantInfo(c.meta.taxonID)
         //- - console.log(info);
-        div(class="col")
+        div(class="col-3")
           div(class="card")
-            img(src="" class="card-img-top" alt="...")
+            if plant.images
+              -  const img = plant.images[0]
+              img(src=img.uri class="card-img-top" alt="...")
+              div(class="card-img-overlay ")
+                small(class="card-text text-white fs-8") #{img.holder} #{img.license}
+
             div(class="card-body")
-              h5(class="card-title")=c.title
-              h6(class="card-subtitle mb-2 text-body-secondary") #{c.meta.taxonID}
+              h5(class="card-title")=plant.vernacularName[0]
+              h6(class="card-subtitle mb-2 text-body-secondary")=plant.scientificName
               //- p(class="card-text") !{c.renderMarkdown()}
               a(href=c.link class="btn btn-primary") View

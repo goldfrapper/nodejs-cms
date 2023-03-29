@@ -61,9 +61,6 @@ html
           label(class="form-check-label" for=id)=label
 
       mixin form-textarea(name, value)
-        div(class="text-end")
-          a(href="https://www.markdownguide.org/cheat-sheet/" 
-            target="_blank") Markdown Cheatsheet
         textarea(
           class="form-control"
           name=name
@@ -200,6 +197,9 @@ html
                 div(class="col-sm-10")
                   +form-contentselect('content',content.content, list)
               else if content.editor
+                a(href="https://www.markdownguide.org/cheat-sheet/" 
+                  class="text-end"
+                    target="_blank") Markdown Cheatsheet
                 +form-textarea('content',content.content)
               else
                 div(class="col-sm-10")
