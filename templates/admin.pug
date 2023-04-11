@@ -49,7 +49,7 @@ html
         button(type="submit" name="delete" class="btn btn-outline-danger btn-sm")=label
       
       mixin form-addbutton( label )
-        button(type="submit" class="btn btn-success btn-sm")=label
+        button(type="submit" name="add" class="btn btn-success btn-sm")=label
       
       mixin form-infobutton( label )
         button(type="submit" class="btn btn-outline-info btn-sm")=label
@@ -85,6 +85,12 @@ html
               class="btn btn-outline-primary btn-sm btn-outline-secondary" 
               for=id)=s
       
+      mixin form-fileinput(name, value, label)
+        - var id = name+'_Id';
+        //- label(for=id class="form-label")=label
+        input(class="form-control form-control-sm" 
+          id=id type="file" name=name accept="image/*")
+      
       mixin addnewcontent-button(content)
         form(method="GET" action="/admin/content")
           div(class="input-group")
@@ -117,14 +123,19 @@ html
             if content
               +form-hiddeninput('parentRef', content.ref)
             +form-addbutton('Link')
-          
+      
+      mixin form-editcontent-button(content)
+        a(href="/admin/content?ref="+content.ref 
+          class="btn btn-sm btn-outline-primary") Edit
+
       mixin linkcontent-buttons(item, parent)
         form(method="POST" action="/admin/content")
           +form-hiddeninput('parentRef', content.ref)
           +form-hiddeninput('ref', item.ref)
           div(class="input-group")
-            a(href="/admin/content?ref="+item.ref 
-            class="btn btn-sm btn-outline-primary") Edit
+            +form-editcontent-button(item)
+            //- a(href="/admin/content?ref="+item.ref 
+            //- class="btn btn-sm btn-outline-primary") Edit
             +form-deletebutton('Unlink')
           
       mixin content-bag(content, list)

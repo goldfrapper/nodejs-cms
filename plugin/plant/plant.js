@@ -110,7 +110,7 @@ class PlantStorage extends SQLiteStorage
     let sql = '', params = [];
 
     sql += 'select * from content inner join content_meta using(ref)';
-    sql += 'where content_meta.key = "taxonID"';
+    sql += 'where content_meta.key = "taxonID" ORDER BY title ASC';
 
     const content = new Map();
     return this._getPromise('each',sql, params, (row)=>{
@@ -151,7 +151,7 @@ class PlantFilter
 class Plant extends Content {
   get editor() { return true; }
 }
-Content.registerContentType('plant', Plant);
+Content.registerContentType(Plant);
 
 class Garden extends ContentBag
 {
@@ -167,7 +167,7 @@ class Garden extends ContentBag
     this.#_plants = await Service.getPlantsForContent(this.ref);
   }
 }
-Content.registerContentType('garden', Garden);
+Content.registerContentType(Garden);
 Content.registerContentTemplate('garden', __dirname+'/garden.pug');
 
 class Service

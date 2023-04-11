@@ -1,0 +1,75 @@
+extends /templates/admin.pug
+
+block plugin
+  
+  div(class="row")
+    h3(class="col-2")=plugin.name
+    div(class="col")
+      form(method="GET" action="/admin/plugins?plugin=gallery")
+        div(class="input-group input-group-sm mb-3")
+          +form-hiddeninput('plugin','gallery')
+          label(class="input-group-text" for="galleryRef") Select Gallery:
+          +form-contentselect('ref', (gallery? gallery.ref:''), contentlist)
+          +form-submitbuttom('Select')
+
+    div(class="col")
+      form(method="POST" action="/admin/plugins?plugin=gallery")
+        +form-hiddeninput('type','gallery')
+        +form-hiddeninput('ref','new')
+        div(class="input-group input-group-sm mb-3")
+          label(class="input-group-text" for="parentRef_id") Add Gallery:
+          +form-textinput('title','')
+          +form-addbutton('Add')
+    hr
+    
+    if !gallery
+      div(class="alert alert-info" role="alert") Please select a Gallery or create a new one
+
+    else
+      //- div(class="row")
+      h4(class="")=gallery.title
+        span(class="ms-4")
+          +form-editcontent-button(gallery)
+      
+      
+      
+      
+      form(method="POST"
+        action="/admin/plugins?plugin=gallery" 
+        enctype="multipart/form-data"
+        class="border border-primary rounded border-2 m-2 p-2")
+        
+        b(style="text-primary") Add image
+        +form-hiddeninput('type','image')
+        +form-hiddeninput('parentRef',gallery.ref)
+        
+        div(class="row")
+          div(class="col-2")
+            +form-label('title','Title')
+          div(class="col")
+            +form-textinput('title','')
+          
+        div(class="row")
+          div(class="col-2")
+            +form-label('url','Url')
+          div(class="col")
+            +form-textinput('url','')
+        
+        div(class="row")
+          div(class="col-2")
+            +form-label('file','File')
+          div(class="col")
+            +form-fileinput('file','')
+        
+        div(class="row")
+          div(class="col text-end")
+            +form-addbutton('Add')
+        
+        
+        
+        
+        
+        
+        
+        
+        

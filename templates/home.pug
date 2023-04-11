@@ -26,8 +26,8 @@ html
           //- div(class="row ms-1")
           div(class="col-12 col-md-6 col-lg-4 col-xl-3")
             a(class="navbar-brand m-0" href="#")
-              //- img(src="/resources/favicon.png" height="24px") 
-              span(class="fs-5 text-secondary-emphasis fw-bolder") #{page.brand}
+              img(src="/resources/logo-dheerlijkheid-64-round.png" height="24px") 
+              span(class="fs-5 ms-2 text-secondary-emphasis fw-bolder") #{page.brand}
 
           div(class="col-12 col-md-6 col-lg-6 col-xl-5" id="navbarNav")
             ul(class="nav justify-content-center nav-fill")
@@ -54,8 +54,8 @@ html
           
           
       block maincontent
-        div(class="maincontent container ps-5 pe-5")
-          div(class=" bg-white")
+        div(class="maincontent container ps-5 pe-5 row")
+          div(class=" bg-white col-lg-8")
             
             block content
               if content.editor
