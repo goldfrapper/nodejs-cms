@@ -70,6 +70,28 @@ CREATE TABLE content_meta (
   FOREIGN KEY(ref) REFERENCES content(ref) ON DELETE CASCADE
 );
 
+-- Authentication sessions
+CREATE TABLE IF NOT EXISTS auth_session (
+  sessionRef TEXT NOT NULL UNIQUE,
+  clientRef TEXT NOT NULL,
+  userRef TEXT NOT NULL,
+  code TEXT NOT NULL,
+  mdate TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(userRef) REFERENCES auth_user(userRef) ON DELETE RESTRICT
+);
+-- Authentication users
+CREATE TABLE IF NOT EXISTS auth_user (
+  userRef TEXT NOT NULL UNIQUE,
+  username TEXT NOT NULL UNIQUE,
+  email TEXT NOT NULL
+);
+
+
+
+
+
+
+
 
 -- Get Content Bag
 SELECT content.* FROM content
