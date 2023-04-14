@@ -85,24 +85,39 @@ class PlantStorage extends SQLiteStorage
     const plants = new Map();
     const parse = ['vernacularNames','images'];
 
-    return this._getPromise('each',sql, params, (row)=>{
+//     return this._getPromise('each',sql, params, (row)=>{
+//
+//       const species = new Species();
+//       for(const v in row) {
+//
+// // if(v == 'images') console.log(JSON.parse(row[v]));
+//
+//         if(parse.indexOf(v) != -1) {
+//           if(row[v] != '[null]') species[v] = JSON.parse(row[v]);
+//         }
+//         else (v in species) && (species[v] = row[v]);
+//       }
+//       plants.set(species.taxonID, species);
+//
+//     }).then(x=>{
+//       if(filter.taxonID) return plants.values().next().value;
+//       else return plants;
+//     }).catch( err => this._dbError(err) );
 
-      const species = new Species();
-      for(const v in row) {
-
-// if(v == 'images') console.log(JSON.parse(row[v]));
-
-        if(parse.indexOf(v) != -1) {
-          if(row[v] != '[null]') species[v] = JSON.parse(row[v]);
+    return this._getPromise('all',sql, params).then(rows => {
+      return rows.map(row => {
+        const species = new Species();
+        for(const v in row) {
+          if(parse.indexOf(v) != -1 && row[v] != '[null]')
+            species[v] = JSON.parse(row[v]);
+          else (v in species) && (species[v] = row[v]);
         }
-        else (v in species) && (species[v] = row[v]);
-      }
-      plants.set(species.taxonID, species);
+        plants.set(species.taxonID, species);
+      });
 
-    }).then(x=>{
       if(filter.taxonID) return plants.values().next().value;
       else return plants;
-    }).catch( err => this._dbError(err) );
+    }).catch( err => this._dbError(err));
   }
 
   getPlantContent()
@@ -113,12 +128,20 @@ class PlantStorage extends SQLiteStorage
     sql += 'where content_meta.key = "taxonID" ORDER BY title ASC';
 
     const content = new Map();
-    return this._getPromise('each',sql, params, (row)=>{
-      const plant = Content.createContentInstance(row);
-      content.set(plant.ref, plant);
-    }).then(x=>{
+
+    return this._getPromise('all',sql, params).then(rows=>{
+      rows.forEach(row => {
+        const plant = Content.createContentInstance(row);
+        content.set(plant.ref, plant);
+      });
       return content;
     }).catch( err => this._dbError(err) );
+    // return this._getPromise('each',sql, params, (row)=>{
+    //   const plant = Content.createContentInstance(row);
+    //   content.set(plant.ref, plant);
+    // }).then(x=>{
+    //   return content;
+    // }).catch( err => this._dbError(err) );
   }
 
   checkIfPlantIsLinked( parentRef, taxonID )
