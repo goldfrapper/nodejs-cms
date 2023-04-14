@@ -1,0 +1,24 @@
+doctype html
+html
+  head
+    title NodeJS-CMS Admin
+    include head.pug
+  body
+    div(class="container")
+      div(class="header")
+        h1
+          img(src="/resources/favicon.png" height="32px" width="32px") 
+          b(class="text-capitalize")=page.title
+          small(class="text-muted")  NodeJS-CMS
+
+        block maincontent
+
+          div(class="row")
+            h3 Authentication
+          
+            form(method="POST" action="/admin/auth")
+              div(class="input-group mb-3")
+                span(class="input-group-text" id="basic-addon1") @
+                input(type="text" name="username" class="form-control" 
+                  placeholder="Username"
+                  aria-label="Username" aria-describedby="basic-addon1")
